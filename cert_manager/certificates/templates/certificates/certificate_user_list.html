@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Пользователи сертификатов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        .table th { background-color: #adb5bd; color: #343a40; }
+        .sortable { color: #6c757d; text-decoration: none; }
+        .sortable:hover { text-decoration: underline; color: #495057; }
+        .card { border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background-color: #f8f9fa; }
+        .card-header { background-color: #e9ecef; color: #495057; }
+        .btn-secondary { background-color: #6c757d; border-color: #6c757d; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-danger { background-color: #adb5bd; border-color: #adb5bd; color: #495057; }
+        .btn-danger:hover { background-color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 rounded">
+            <div class="container-fluid">
+                <a class="navbar-brand text-muted" href="/"><i class="fas fa-home"></i> Главная</a>
+            </div>
+        </nav>
+
+        <h1 class="text-center text-muted mb-4"><i class="fas fa-users"></i> Пользователи сертификатов</h1>
+
+        <!-- Форма добавления -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-plus"></i> Добавить запись</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-4">{{ form.full_name.label_tag }} {{ form.full_name }}</div>
+                        <div class="col-md-4">{{ form.computer_number.label_tag }} {{ form.computer_number }}</div>
+                        <div class="col-md-4">{{ form.installed_certificate.label_tag }} {{ form.installed_certificate }}</div>
+                    </div>
+                    <button type="submit" name="add" class="btn btn-secondary mt-3"><i class="fas fa-save"></i> Добавить</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Форма фильтров -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-filter"></i> Фильтры <button class="btn btn-sm btn-light ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">Показать/Скрыть</button></h5>
+            </div>
+            <div class="collapse show" id="filterCollapse">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">{{ filter_form.full_name.label_tag }} {{ filter_form.full_name }}</div>
+                        <div class="col-md-4">{{ filter_form.computer_number.label_tag }} {{ filter_form.computer_number }}</div>
+                        <div class="col-md-4">{{ filter_form.installed_certificate.label_tag }} {{ filter_form.installed_certificate }}</div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-secondary"><i class="fas fa-search"></i> Применить фильтры</button>
+                            <a href="?" class="btn btn-light ms-2"><i class="fas fa-undo"></i> Сбросить</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Таблица -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-table"></i> Таблица записей</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th><a href="?{% if sort_field == 'full_name' and direction == 'asc' %}sort=-full_name{% else %}sort=full_name{% endif %}{{ filter_form.data.urlencode }}" class="sortable">ФИО {% if sort_field == 'full_name' %}{% if direction == 'asc' %}<i class="fas fa-sort-up"></i>{% else %}<i class="fas fa-sort-down"></i>{% endif %}{% endif %}</a></th>
+                                    <th><a href="?{% if sort_field == 'computer_number' and direction == 'asc' %}sort=-computer_number{% else %}sort=computer_number{% endif %}{{ filter_form.data.urlencode }}" class="sortable">Номер компьютера {% if sort_field == 'computer_number' %}{% if direction == 'asc' %}<i class="fas fa-sort-up"></i>{% else %}<i class="fas fa-sort-down"></i>{% endif %}{% endif %}</a></th>
+                                    <th><a href="?{% if sort_field == 'installed_certificate' and direction == 'asc' %}sort=-installed_certificate{% else %}sort=installed_certificate{% endif %}{{ filter_form.data.urlencode }}" class="sortable">Какой сертификат установлен {% if sort_field == 'installed_certificate' %}{% if direction == 'asc' %}<i class="fas fa-sort-up"></i>{% else %}<i class="fas fa-sort-down"></i>{% endif %}{% endif %}</a></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td><input type="checkbox" name="selected" value="{{ user.id }}"></td>
+                                    <td>{{ user.full_name }}</td>
+                                    <td>{{ user.computer_number }}</td>
+                                    <td>{{ user.installed_certificate }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="submit" name="delete" class="btn btn-danger mt-3"><i class="fas fa-trash"></i> Удалить выбранные</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Выделить все чекбоксы
+        document.getElementById('selectAll').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="selected"]');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    </script>
+</body>
+</html>
